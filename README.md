@@ -188,6 +188,55 @@ void loop() {
 
 ---
 
+### config4h `1.0.0`
+
+Device configuration over MQTT for ESP32 — single JSON document in memory, dot-path access, live change callbacks.
+
+**Install:**
+
+```ini
+lib_deps =
+    http://192.168.0.107:30600/api/files/config4h/config4h/1.0.0/config4h.zip?token=<api-key>
+    bblanchon/ArduinoJson@^7.0.0
+    knolleary/PubSubClient@^2.8
+```
+
+**Usage:**
+
+```cpp
+#include <config4h.h>
+
+void setup() {
+    config4h_on_change([]() {
+        bool en  = config4h_get("healthcheck.enabled").asBool();
+        int  hz  = config4h_get("healthcheck.frequency").asInt();
+        String n = config4h_get("deviceName").asString();
+    });
+    config4h_init("192.168.1.10", 1883, "tara01", "Tara");
+}
+
+void loop() {
+    config4h_loop();
+
+    // Read anywhere, any time — returns default if key missing or no config yet
+    if (config4h_get("healthcheck.enabled").asBool()) { ... }
+}
+```
+
+**MQTT trigger** (publish to `{projectId}.{deviceName}.config`):
+
+```json
+{
+  "projectId":   "tara01",
+  "projectName": "Tara Home",
+  "deviceName":  "Tara",
+  "deviceType":  "robot",
+  "healthcheck": { "enabled": true, "frequency": 100 }
+}
+```
+
+---
+
 ## Publishing a library update
 
 ```bash
