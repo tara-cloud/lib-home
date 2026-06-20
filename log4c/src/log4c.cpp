@@ -235,6 +235,35 @@ void log4c_mqtt_enable(bool on)    { _mqttEnabled    = on; }
 void log4c_console_level(int lvl)  { _consoleLevel   = lvl; }
 void log4c_mqtt_level(int lvl)     { _mqttLevel      = lvl; }
 
+void log4c_set(const char* key, const char* value) {
+    if (!key || !value) return;
+
+    // Helper: parse bool
+    auto toBool = [](const char* v) -> bool {
+        return strcmp(v, "true") == 0 || strcmp(v, "1") == 0;
+    };
+
+    if      (!strcmp(key, "device"))           { _device         = value; }
+    else if (!strcmp(key, "console.enabled"))  { _consoleEnabled = toBool(value); }
+    else if (!strcmp(key, "console.level"))    { _consoleLevel   = _levelFromStr(value); }
+    else if (!strcmp(key, "mqtt.enabled"))     { _mqttEnabled    = toBool(value); }
+    else if (!strcmp(key, "mqtt.level"))       { _mqttLevel      = _levelFromStr(value); }
+    else if (!strcmp(key, "mqtt.topic")) {
+        if (_mutex) xSemaphoreTake(_mutex, portMAX_DELAY);
+        _mqttTopic = value;
+        if (_mutex) xSemaphoreGive(_mutex);
+    }
+    // queue.size and task.* are init-time only — log a warning if attempted
+    else if (!strcmp(key, "queue.size") ||
+             !strcmp(key, "task.stackSize") ||
+             !strcmp(key, "task.core")) {
+        Serial.printf("[log4c] '%s' is init-time only — call log4c_init() to apply\n", key);
+    }
+    else {
+        Serial.printf("[log4c] unknown key: '%s'\n", key);
+    }
+}
+
 // Called from main thread — always non-blocking, never prints directly
 void log4c_write(int level, const char* file, int line, const char* fmt, ...) {
     char buf[220];

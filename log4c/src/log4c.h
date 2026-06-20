@@ -48,11 +48,20 @@ void log4c_set_device(const String& name);
 // publish : your client's publish function; called from drain task (core 0)
 void log4c_set_mqtt(const String& topic, Log4cPublishFn publish);
 
-// Enable/disable an appender at runtime
+// Generic key/value config setter — dot-notation keys:
+//   "console.enabled"  → "true" | "false"
+//   "console.level"    → "DEBUG" | "INFO" | "WARN" | "ERROR"
+//   "mqtt.enabled"     → "true" | "false"
+//   "mqtt.level"       → "DEBUG" | "INFO" | "WARN" | "ERROR"
+//   "mqtt.topic"       → "tara01/log"
+//   "device"           → "MyDevice"
+void log4c_set(const char* key, const char* value);
+
+// Enable/disable an appender at runtime (shorthand)
 void log4c_console_enable(bool on);
 void log4c_mqtt_enable(bool on);
 
-// Change minimum level for an appender at runtime
+// Change minimum level for an appender at runtime (shorthand)
 void log4c_console_level(int level);
 void log4c_mqtt_level(int level);
 

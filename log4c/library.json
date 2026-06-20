@@ -1,6 +1,6 @@
 {
   "name": "log4c",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Multi-appender structured logging for ESP32/Arduino — Console + MQTT, JSON config, FreeRTOS drain task",
   "keywords": ["logging", "mqtt", "esp32", "freertos", "json-config"],
   "frameworks": ["arduino"],
