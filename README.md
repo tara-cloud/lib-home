@@ -15,4 +15,4 @@ Then `#include` the library header normally.
 
 | Directory | Description |
 | --------- | ----------- |
-| *(add as you create them)* | |
+| `log4c` | Structured logging — Serial + async MQTT via FreeRTOS drain task |

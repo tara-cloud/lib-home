@@ -1,0 +1,8 @@
+{
+  "name": "log4c",
+  "version": "1.0.0",
+  "description": "Lightweight structured logging for ESP32/Arduino — Serial + MQTT queue with FreeRTOS drain task",
+  "keywords": ["logging", "mqtt", "esp32", "freertos"],
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32"]
+}
