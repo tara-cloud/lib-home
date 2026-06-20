@@ -20,7 +20,7 @@
 static const char DEFAULT_CONFIG[] = R"({
   "appenders": {
     "console": { "enabled": true,  "level": "DEBUG" },
-    "mqtt":    { "enabled": false, "level": "INFO",  "topic": "" }
+    "mqtt":    { "enabled": true,  "level": "INFO",  "topic": "" }
   },
   "queue":  { "size": 64 },
   "task":   { "stackSize": 4096, "core": 0 }

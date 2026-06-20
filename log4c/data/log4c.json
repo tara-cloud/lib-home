@@ -5,9 +5,9 @@
       "level": "DEBUG"
     },
     "mqtt": {
-      "enabled": false,
+      "enabled": true,
       "level": "INFO",
-      "topic": "myproject/log"
+      "topic": ""
     }
   },
   "queue": {
