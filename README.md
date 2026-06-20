@@ -135,6 +135,59 @@ void loop() {
 
 ---
 
+### wifi4h `1.0.0`
+
+WiFi connection + captive-portal hotspot for ESP32 — consumer-defined field schema, NVS persistence, schema-driven form rendering.
+
+**Install:**
+
+```ini
+lib_deps =
+    http://192.168.0.107:30600/api/files/wifi4h/wifi4h/1.0.0/wifi4h.zip?token=<api-key>
+    bblanchon/ArduinoJson@^7.0.0
+```
+
+**Usage:**
+
+```cpp
+#include <wifi4h.h>
+
+void setup() {
+    wifi4h_set_device_id("A1B2C3");               // suffix for AP name "Setup-A1B2C3"
+
+    // Declare fields — portal renders a form with exactly these fields
+    wifi4h_add_field("ssid",        "string",   true);
+    wifi4h_add_field("password",    "password", false);
+    wifi4h_add_field("host",        "string",   true);
+    wifi4h_add_field("mqttPort",    "number",   false);
+
+    wifi4h_on_event([](const String& ev, const String& detail) {
+        Serial.printf("[wifi] %s %s\n", ev.c_str(), detail.c_str());
+    });
+
+    wifi4h_load();       // restore saved values from NVS
+    wifi4h_connect();    // connect to saved SSID, or start captive portal
+
+    // Read any saved value by field name
+    String host     = wifi4h_get("host");
+    String mqttPort = wifi4h_get("mqttPort");
+}
+
+void loop() {
+    wifi4h_reconnect();  // reconnect silently if WiFi drops
+}
+```
+
+**Events:** `connected` (detail = IP), `failed` (detail = SSID), `ap_start` (detail = AP name + IP), `saved`
+
+**Portal behaviour:**
+
+- AP name: `Setup-<last 6 chars of device ID>`, password `12345678`
+- Captive portal probes handled: iOS, Android, Windows
+- POST `/save` validates required fields, persists all to NVS, reboots
+
+---
+
 ## Publishing a library update
 
 ```bash
