@@ -58,7 +58,13 @@ void wifi4h_load() {
     Preferences prefs;
     prefs.begin(_ns, true);
     for (int i = 0; i < _fieldCount; i++) {
-        _fields[i].value = prefs.getString(_fields[i].name, "");
+        String val = prefs.getString(_fields[i].name, "");
+        // Migration: old firmware stored number fields via putUShort — fall back
+        if (val.length() == 0 && strcmp(_fields[i].type, "number") == 0) {
+            uint16_t n = prefs.getUShort(_fields[i].name, 0);
+            if (n > 0) val = String(n);
+        }
+        _fields[i].value = val;
     }
     prefs.end();
     LINFO("wifi4h: loaded %d field(s) from NVS ns=%s", _fieldCount, _ns);
