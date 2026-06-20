@@ -1,0 +1,20 @@
+{
+  "appenders": {
+    "console": {
+      "enabled": true,
+      "level": "DEBUG"
+    },
+    "mqtt": {
+      "enabled": false,
+      "level": "INFO",
+      "topic": "myproject/log"
+    }
+  },
+  "queue": {
+    "size": 32
+  },
+  "task": {
+    "stackSize": 4096,
+    "core": 0
+  }
+}

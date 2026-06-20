@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <functional>
 #include <stdarg.h>
 
 // ─── Log levels ───────────────────────────────────────────────────────────────
@@ -8,8 +9,14 @@
 #define L4C_WARN  2
 #define L4C_ERROR 3
 
+// ─── Compile-time overrides (define BEFORE #include "log4c.h") ───────────────
+// #define LOG4C_CONSOLE_LEVEL L4C_INFO    // suppress DEBUG from Serial
+// #define LOG4C_MQTT_LEVEL    L4C_WARN    // only WARN+ over MQTT
+// #define LOG4C_QUEUE_SIZE    64
+// #define LOG4C_TASK_STACK    4096
+// #define LOG4C_TASK_CORE     0
+
 // ─── Macros ───────────────────────────────────────────────────────────────────
-// LLOG(level, fmt, ...) — always safe; Serial is immediate, MQTT is async
 #define LLOG(level, fmt, ...) \
     log4c_write(level, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 
@@ -18,48 +25,36 @@
 #define LWARN(fmt, ...)  LLOG(L4C_WARN,  fmt, ##__VA_ARGS__)
 #define LERROR(fmt, ...) LLOG(L4C_ERROR, fmt, ##__VA_ARGS__)
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-struct Log4cConfig {
-    // Minimum level to print to Serial (L4C_DEBUG = all)
-    int serialLevel = L4C_DEBUG;
+// ─── MQTT publish callback ────────────────────────────────────────────────────
+using Log4cPublishFn = std::function<bool(const char* topic, const char* payload)>;
 
-    // Minimum level to send over MQTT (L4C_INFO = skip debug)
-    int mqttLevel = L4C_INFO;
+// ─── Init ─────────────────────────────────────────────────────────────────────
 
-    // Queue capacity (entries dropped silently when full)
-    int queueSize = 32;
+// Auto-init: loads baked-in defaults → merges /log4c.json (LittleFS then SPIFFS)
+//            → applies any LOG4C_* compile-time defines
+void log4c_init();
 
-    // FreeRTOS task stack size in bytes
-    int taskStackSize = 4096;
+// Manual override: pass your own JSON config string (same schema as log4c.json)
+// Merged on top of defaults; filesystem file is NOT loaded when this is used
+void log4c_init(const char* configJson);
 
-    // FreeRTOS task core (0 = protocol/background, 1 = Arduino loop)
-    int taskCore = 0;
-};
-
-// ─── MQTT sink (optional) ─────────────────────────────────────────────────────
-struct Log4cMqtt {
-    // Raw publish callback — implement however your project connects to MQTT
-    // Called from the drain task (core 0), must be thread-safe
-    using PublishFn = std::function<bool(const char* topic, const char* payload)>;
-
-    String    topic;       // e.g. "tara01/log"
-    PublishFn publish;     // your MQTT publish function
-};
-
-// ─── API ──────────────────────────────────────────────────────────────────────
-
-// Call once at startup (before any LLOG)
-// config  — tuning parameters (use defaults if omitted)
-// mqtt    — optional; pass nullptr to log to Serial only
-void log4c_init(const Log4cConfig& config = Log4cConfig(),
-                const Log4cMqtt*   mqtt   = nullptr);
+// ─── Runtime configuration ────────────────────────────────────────────────────
 
 // Set device name included in every MQTT payload
-void log4c_set_device(const String& deviceName);
+void log4c_set_device(const String& name);
 
-// Change MQTT sink at runtime (e.g. after MQTT connects)
-void log4c_set_mqtt(const Log4cMqtt& mqtt);
+// Attach (or re-attach) the MQTT appender — safe to call after MQTT connects
+// topic   : e.g. "tara01/log"
+// publish : your client's publish function; called from drain task (core 0)
+void log4c_set_mqtt(const String& topic, Log4cPublishFn publish);
 
-// Internal — use LLOG macros instead
-void log4c_write(int level, const char* file, int line,
-                 const char* fmt, ...);
+// Enable/disable an appender at runtime
+void log4c_console_enable(bool on);
+void log4c_mqtt_enable(bool on);
+
+// Change minimum level for an appender at runtime
+void log4c_console_level(int level);
+void log4c_mqtt_level(int level);
+
+// ─── Internal — use LLOG macros ──────────────────────────────────────────────
+void log4c_write(int level, const char* file, int line, const char* fmt, ...);
