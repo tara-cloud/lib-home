@@ -90,6 +90,51 @@ log4c_init(cfg);
 
 ---
 
+### ota4h `1.0.0`
+
+OTA firmware update over MQTT for ESP32 — dedicated MQTT client, progress reporting, log4c integration.
+
+**Install:**
+
+```ini
+lib_deps =
+    http://192.168.0.107:30600/api/files/ota4h/ota4h/1.0.0/ota4h.zip?token=<api-key>
+    bblanchon/ArduinoJson@^7.0.0
+    knolleary/PubSubClient@^2.8
+```
+
+**Usage:**
+
+```cpp
+#include <ota4h.h>
+
+void setup() {
+    // ... WiFi connect ...
+    ota4h_on_state([](const String& state, int pct) {
+        // update display or LED based on state
+    });
+    ota4h_init("192.168.1.10", 1883, "myproject", "device01");
+}
+
+void loop() {
+    ota4h_loop();
+}
+```
+
+**MQTT trigger payload** (publish to `{projectId}.{deviceName}.ota`):
+
+```json
+{ "version": "1.2.3", "url": "http://...", "apiKey": "..." }
+```
+
+**Status payload** (published to `{projectId}.{deviceName}.ota_status`):
+
+```json
+{ "state": "downloading|progress|ok|failed", "version": "1.2.3", "progress": 50, "error": "..." }
+```
+
+---
+
 ## Publishing a library update
 
 ```bash
