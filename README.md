@@ -11,7 +11,7 @@ Add the Pocket download URL to `lib_deps` in your `platformio.ini`:
 
 ```ini
 lib_deps =
-    http://192.168.0.107:30600/api/files/lib-home/<lib>/<version>/<lib>.zip?token=<api-key>
+    http://192.168.0.107:30600/api/files/<repo>/<artifact>/<version>/<artifact>.zip?token=<api-key>
 ```
 
 PlatformIO downloads and unpacks it automatically — no local path needed.
@@ -28,7 +28,7 @@ Structured logging for ESP32 — prints to Serial immediately, publishes to MQTT
 
 ```ini
 lib_deps =
-    http://192.168.0.107:30600/api/files/lib-home/log4c/1.0.0/log4c.zip?token=<api-key>
+    http://192.168.0.107:30600/api/files/log4c/log4c/1.0.0/log4c.zip?token=<api-key>
     bblanchon/ArduinoJson@^7.0.0
 ```
 
@@ -95,7 +95,7 @@ log4c_init(cfg);
 ```bash
 cd lib-home
 zip -r /tmp/<lib>.zip <lib>/
-curl -X POST http://192.168.0.107:30600/api/repos/lib-home/artifacts \
+curl -X POST http://192.168.0.107:30600/api/repos/<lib>/artifacts \
   -H "x-pocket-token: <api-key>" \
   -F "name=<lib>" -F "version=<new-version>" \
   -F "file=@/tmp/<lib>.zip;filename=<lib>.zip"
