@@ -2,12 +2,8 @@
 #include <Arduino.h>
 #include <face.h>
 #include <IDisplay.h>
-
-// ─── Mood constants ───────────────────────────────────────────────────────────
-#define TARA_DEFAULT  0
-#define TARA_TIRED    1   // drooping inner-top eyelid (sleepy)
-#define TARA_ANGRY    2   // sharp outer-top eyelid (angry)
-#define TARA_HAPPY    3   // bottom eyelid rises (cheeks up)
+#include "tara_mood.h"
+#include "tara_sweat.h"
 
 // ─── Gaze direction constants ────────────────────────────────────────────────
 #define TARA_CENTER   0
@@ -22,9 +18,14 @@
 
 // ─── TaraFace ─────────────────────────────────────────────────────────────────
 //
-// RoboEyes-inspired eye renderer. Draws two rounded-rectangle eyes with moods,
-// blink, gaze, autoblinker, idle repositioning, flicker, curiosity, and sweat.
+// RoboEyes-inspired eye renderer using IDisplay.
 // Implements face.h — call begin() to register with the face dispatcher.
+//
+// File layout:
+//   tara_mood.h    — mood constants (TARA_DEFAULT/TIRED/ANGRY/HAPPY), MoodLids struct
+//   tara_eyelids.h — drawEyelids() free function
+//   tara_sweat.h   — SweatDrops struct
+//   tara_face.h/cpp — main engine (this file)
 //
 // ─── Usage ───────────────────────────────────────────────────────────────────
 //   TaraFace face(&display, 128, 64, 50);
@@ -49,10 +50,10 @@ public:
     void setSpaceBetween(int space);
 
     // ─── Mood & gaze ──────────────────────────────────────────────────────────
-    void setMood(uint8_t mood);                // TARA_DEFAULT/TIRED/ANGRY/HAPPY
-    void setPosition(uint8_t pos);             // TARA_CENTER/N/NE/E/SE/S/SW/W/NW
-    void setCuriosity(bool on);                // outer eye grows when looking sideways
-    void setCyclops(bool on);                  // one eye only
+    void setMood(uint8_t mood);       // TARA_DEFAULT / TIRED / ANGRY / HAPPY
+    void setPosition(uint8_t pos);    // TARA_CENTER / N / NE / E / SE / S / SW / W / NW
+    void setCuriosity(bool on);       // outer eye grows when looking sideways
+    void setCyclops(bool on);         // one eye only
 
     // ─── Blink ────────────────────────────────────────────────────────────────
     void close();  void open();  void blink();
@@ -65,86 +66,80 @@ public:
     void setIdleMode(bool on, int intervalSec = 2, int variationSec = 3);
 
     // ─── Effects ──────────────────────────────────────────────────────────────
-    void setHFlicker(bool on, uint8_t amplitude = 2);   // left/right shiver
-    void setVFlicker(bool on, uint8_t amplitude = 5);   // up/down shiver
-    void setSweat(bool on);                              // falling sweat drops
+    void setHFlicker(bool on, uint8_t amplitude = 2);
+    void setVFlicker(bool on, uint8_t amplitude = 5);
+    void setSweat(bool on);
 
     // ─── One-shot animations ──────────────────────────────────────────────────
     void anim_confused();   // shakes left/right for 500 ms
-    void anim_laugh();      // bounces up/down for 500 ms
+    void anim_laugh();      // bounces up/down  for 500 ms
 
-    // ─── Frame rate ───────────────────────────────────────────────────────────
+    // ─── Frame rate & draw ────────────────────────────────────────────────────
     void setFramerate(uint8_t fps);
-
-    // ─── Draw (called by face dispatcher; also callable directly) ────────────
-    void update();     // respects frame rate — call in loop()
-    void drawEyes();   // draws immediately, no frame-rate limit
+    void update();     // call in loop() — respects frame rate
+    void drawEyes();   // draw immediately (no rate limit)
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
-    int getScreenConstraintX();   // max left-eye x before going off-screen
-    int getScreenConstraintY();   // max left-eye y before going off-screen
+    int getScreenConstraintX();
+    int getScreenConstraintY();
+
+    // ─── Register with face.h dispatcher ─────────────────────────────────────
+    void begin();
 
 private:
     IDisplay* _d;
-    int  _sw, _sh;      // screen width, height
+    int  _sw, _sh;
 
-    // ─── Eye defaults (what you set via setWidth/Height/etc.) ────────────────
+    // ─── Eye defaults (configured via setters) ────────────────────────────────
     float eyeWDefault = 36, eyeHDefault = 36;
     float eyeRDefault = 8;
     int   spaceDef    = 10;
 
-    // ─── Current values — smoothly tweened toward targets each frame ─────────
-    float eyeW, eyeH, eyeR;   // eye size + corner radius
-    float space;               // space between eyes
-    float leftX,  leftY;      // left eye position
-    float rightX, rightY;     // right eye position (derived from left)
+    // ─── Current geometry (tweened each frame toward targets) ─────────────────
+    float eyeW, eyeH, eyeR, space;
+    float leftX, leftY, rightX, rightY;
 
-    // ─── Targets — set by setMood/setPosition/blink/etc. ─────────────────────
-    float eyeWt, eyeHt;       // eye size targets
-    float leftXt, leftYt;     // gaze position targets
+    // ─── Targets ──────────────────────────────────────────────────────────────
+    float eyeWt, eyeHt;
+    float leftXt, leftYt;
 
-    // ─── Eyelid heights — tweened, 0 = retracted, eyeH/2 = full ─────────────
-    float lidTired, lidAngry, lidHappy;    // current (drawn)
-    float lidTiredT, lidAngryT, lidHappyT; // targets
+    // ─── Mood (eyelids) ───────────────────────────────────────────────────────
+    MoodLids _lids;
 
-    // ─── Mood / flags ─────────────────────────────────────────────────────────
-    uint8_t _mood   = TARA_DEFAULT;
-    bool curious    = false;
-    bool cyclops    = false;
+    // ─── Sweat drops ──────────────────────────────────────────────────────────
+    SweatDrops _sweatDrops;
+    bool sweat = false;
+
+    // ─── Flags ────────────────────────────────────────────────────────────────
+    bool curious = false;
+    bool cyclops = false;
 
     // ─── Flicker ──────────────────────────────────────────────────────────────
     bool  hFlicker = false; uint8_t hFlickerAmp = 2; bool hFlickerAlt = false;
     bool  vFlicker = false; uint8_t vFlickerAmp = 5; bool vFlickerAlt = false;
 
-    // ─── Sweat drops ──────────────────────────────────────────────────────────
-    bool  sweat = false;
-    float sweat1y, sweat2y, sweat3y;
-    float sweat1h = 1, sweat2h = 1, sweat3h = 1;
-
     // ─── Autoblinker ──────────────────────────────────────────────────────────
-    bool  autoBlink = false;
-    int   blinkIntervalSec = 3, blinkVarSec = 4;
+    bool autoBlink = false;
+    int  blinkIntervalSec = 3, blinkVarSec = 4;
     unsigned long blinkTimer = 0;
 
     // ─── Idle repositioning ───────────────────────────────────────────────────
-    bool  idleMode = false;
-    int   idleIntervalSec = 2, idleVarSec = 3;
+    bool idleMode = false;
+    int  idleIntervalSec = 2, idleVarSec = 3;
     unsigned long idleTimer = 0;
 
-    // ─── One-shot animation state ─────────────────────────────────────────────
+    // ─── One-shot animations ──────────────────────────────────────────────────
     bool confused = false; unsigned long confusedAt = 0;
     bool laughing = false; unsigned long laughAt    = 0;
     static const int CONFUSED_DUR = 500;
     static const int LAUGH_DUR    = 500;
 
     // ─── Frame timing ─────────────────────────────────────────────────────────
-    int  frameMs = 20;
+    int frameMs = 20;
     unsigned long lastFrameMs = 0;
 
     // ─── Private helpers ──────────────────────────────────────────────────────
     void  _resetToDefaults();
-    void  _drawEyelids(int x, int y, int w, int h, bool isLeft);
-    void  _tickSweat();
     float _tween(float current, float target);
     unsigned long _randomMs(int base, int variation);
 };

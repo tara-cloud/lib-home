@@ -1,6 +1,6 @@
 {
   "name": "tara-face",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "RoboEyes-inspired eye renderer using IDisplay — moods, blink, autoblinker, idle, flicker, curiosity, cyclops, sweat, implements face.h",
   "keywords": ["face", "eyes", "oled", "esp32", "robot", "roboeyes"],
   "frameworks": ["arduino"],
