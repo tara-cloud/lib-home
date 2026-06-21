@@ -55,7 +55,8 @@ void health_check_set_status(const String& componentName, const String& status);
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 void health_check_init(const String& mqttHost, uint16_t mqttPort,
-                       const String& projectId, const String& deviceName);
+                       const String& projectId, const String& deviceName,
+                       const String& firmwareVersion);
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
 // Call every loop(). Publishes when enabled=true and frequency elapses.

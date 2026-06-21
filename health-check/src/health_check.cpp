@@ -16,6 +16,7 @@ static String   _mqttHost;
 static uint16_t _mqttPort   = 1883;
 static String   _projectId;
 static String   _deviceName;
+static String   _firmwareVersion;
 static String   _topic;
 static String   _clientId;
 
@@ -94,11 +95,13 @@ void health_check_set_status(const String& componentName, const String& status) 
 }
 
 void health_check_init(const String& mqttHost, uint16_t mqttPort,
-                       const String& projectId, const String& deviceName) {
-    _mqttHost   = mqttHost;
-    _mqttPort   = mqttPort;
-    _projectId  = projectId;
-    _deviceName = deviceName;
+                       const String& projectId, const String& deviceName,
+                       const String& firmwareVersion) {
+    _mqttHost        = mqttHost;
+    _mqttPort        = mqttPort;
+    _projectId       = projectId;
+    _deviceName      = deviceName;
+    _firmwareVersion = firmwareVersion;
     _topic      = projectId + "." + deviceName + ".healthcheck";
     _clientId   = deviceName + "-hc";
 
@@ -131,10 +134,11 @@ void health_check_publish() {
     }
 
     JsonDocument doc;
-    doc["projectId"]  = _projectId;
-    doc["deviceName"] = _deviceName;
-    doc["timestamp"]  = _timestamp();
-    doc["status"]     = HC_ONLINE;
+    doc["projectId"]       = _projectId;
+    doc["deviceName"]      = _deviceName;
+    doc["firmwareVersion"] = _firmwareVersion;
+    doc["timestamp"]       = _timestamp();
+    doc["status"]          = HC_ONLINE;
 
     JsonArray comps = doc["components"].to<JsonArray>();
     for (int i = 0; i < reg4h_component_count(); i++) {

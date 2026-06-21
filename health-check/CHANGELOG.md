@@ -1,5 +1,12 @@
 # Changelog — health-check
 
+## [1.0.2] — 2026-06-21
+
+### Added
+
+- `firmwareVersion` field in `health_check_init()` signature and published payload
+- Payload now includes `"firmwareVersion"` between `deviceName` and `timestamp`
+
 ## [1.0.1] — 2026-06-21
 
 ### Changed
