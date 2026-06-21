@@ -13,9 +13,9 @@ static void _ifDrawOpen(IDisplay* d, int leftX, int rightX, int eyeY) {
 }
 
 static void _ifDrawClosed(IDisplay* d, int leftX, int rightX, int eyeY) {
-    int midY = eyeY + _IF_EYE_H / 2 - 1;
-    d->fillRect(leftX,  midY, _IF_EYE_W, 3, true);
-    d->fillRect(rightX, midY, _IF_EYE_W, 3, true);
+    int botY = eyeY + _IF_EYE_H - 3;   // bottom of the eye
+    d->fillRect(leftX,  botY, _IF_EYE_W, 3, true);
+    d->fillRect(rightX, botY, _IF_EYE_W, 3, true);
 }
 
 void renderIdleFace(IDisplay* display, int screenW, int screenH,
