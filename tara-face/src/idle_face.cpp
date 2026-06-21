@@ -12,12 +12,11 @@ static const int _SX = -2;
 static const int _SY =  2;
 
 // Eye move interval and max offset range
-static const unsigned long MOVE_INTERVAL = 3000;   // every 3 s
-static const int           MAX_OFFSET_X  = 8;
-static const int           MAX_OFFSET_Y  = 5;
+static const unsigned long MOVE_INTERVAL = 3000;
+static const int           MAX_OFFSET_X  = 4;   // subtle — just 4px left/right
+static const int           MAX_OFFSET_Y  = 3;   // subtle — just 3px up/down
 
-// Tween speed — fraction of distance closed per frame (0.2 = 20%)
-static const float TWEEN = 0.25f;
+static const float TWEEN = 0.08f;   // slow creep — feels like real eye drift
 
 static void _drawEyes(IDisplay* d, int screenW, int screenH, int ox, int oy) {
     int totalW = _EYE_W + _SPACE + _EYE_W;
