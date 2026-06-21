@@ -57,7 +57,9 @@ private:
     int  _debounce  = 3;
     int  _dbc       = 0;
     bool _stable    = false;
-    bool _prev      = false;   // previous stable state — fires callback on rising edge only
+    bool _prev      = false;
+    unsigned long _lastFire = 0;
+    unsigned long _cooldown = 300;   // min ms between consecutive fires
 
     TouchFn _onTouch = nullptr;
 

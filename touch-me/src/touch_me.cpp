@@ -28,18 +28,16 @@ bool TouchMe::_isTouched() const {
 }
 
 void TouchMe::update() {
-    // Debounce
-    bool raw = _isTouched();
-    if (raw == _stable) {
-        _dbc = 0;
-    } else {
-        if (++_dbc >= _debounce) { _stable = raw; _dbc = 0; }
-    }
+    unsigned long now = millis();
 
-    // Fire callback on rising edge (not-touched → touched)
-    if (_stable && !_prev) {
+    // Read raw value directly — no debounce for maximum responsiveness
+    bool raw = _isTouched();
+
+    // Fire callback when touched AND cooldown has elapsed
+    // This catches every touch even if signal is noisy/brief
+    if (raw && now - _lastFire >= _cooldown) {
+        _lastFire = now;
         if (_onTouch) _onTouch();
         LINFO("touch-me: touched");
     }
-    _prev = _stable;
 }
