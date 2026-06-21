@@ -8,21 +8,32 @@ static const int _EYE_R = 8;
 static const int _SPACE = 10;
 
 // Draw both eyes with a lid covering the top lidH pixels (0 = fully open).
-// When lidH >= EYE_H the eye is fully closed — show a thin bottom line instead.
+// Shadow: a 2 px white copy offset -2 px left and +2 px down, drawn first.
+// The eye body draws on top — shadow peeks out on left and bottom edges only.
 static void _drawEyes(IDisplay* d, int leftX, int rightX, int eyeY, int lidH) {
     d->clear();
     d->fillScreen(false);   // black background
 
+    static const int SX = -2;   // shadow offset left
+    static const int SY =  2;   // shadow offset down
+
     for (int ex : {leftX, rightX}) {
         if (lidH >= _EYE_H) {
-            // Fully closed — thin line at the bottom of the eye
-            d->fillRect(ex, eyeY + _EYE_H - 3, _EYE_W, 3, true);
+            // Fully closed — shadow line then closed line
+            d->fillRect(ex + SX, eyeY + _EYE_H - 3 + SY, _EYE_W, 3, true);
+            d->fillRect(ex,      eyeY + _EYE_H - 3,       _EYE_W, 3, true);
         } else {
-            // White eye body
+            // Shadow (slightly offset, drawn behind the eye)
+            d->fillRoundRect(ex + SX, eyeY + SY, _EYE_W, _EYE_H, _EYE_R, true);
+
+            // Eye body on top
             d->fillRoundRect(ex, eyeY, _EYE_W, _EYE_H, _EYE_R, true);
-            // Black lid descending from the top
-            if (lidH > 0)
-                d->fillRect(ex, eyeY, _EYE_W, lidH, false);
+
+            // Black lid descending from the top (erases lid portion of eye)
+            if (lidH > 0) {
+                d->fillRect(ex + SX, eyeY + SY, _EYE_W, lidH, false); // erase shadow lid too
+                d->fillRect(ex,      eyeY,       _EYE_W, lidH, false);
+            }
         }
     }
 
