@@ -1,23 +1,18 @@
 #pragma once
 #include <IDisplay.h>
 
-// ─── Idle face render ─────────────────────────────────────────────────────────
-// Two white rounded-rectangle eyes centred on screen.
-// Blink animation every 5 s:
-//   lid descends top→bottom over BLINK_CLOSE_MS,
-//   then rises  bottom→top over BLINK_OPEN_MS.
-// Non-blocking — all state held in BlinkState.
+// ─── Idle face — eyes shift position every 3 seconds ─────────────────────────
+// No blink. Eyes move to a random offset (left, right, up, down, centre)
+// with a smooth 200ms tween transition. Non-blocking.
 
-static const unsigned long BLINK_WAIT_MS  = 4000;  // open hold
-static const unsigned long BLINK_CLOSE_MS =  350;  // close duration (smooth)
-static const unsigned long BLINK_OPEN_MS  =  200;  // open duration
-
-enum BlinkPhase { BLINK_WAITING, BLINK_CLOSING, BLINK_OPENING };
-
-struct BlinkState {
-    BlinkPhase    phase     = BLINK_WAITING;
-    unsigned long phaseAt   = 0;   // millis() when this phase started
+struct IdleState {
+    int           offsetX    = 0;    // current eye offset (tweened)
+    int           offsetY    = 0;
+    int           targetX    = 0;    // target eye offset
+    int           targetY    = 0;
+    unsigned long lastMove   = 0;    // when last move was scheduled
+    unsigned long moveAt     = 0;    // when next move fires
 };
 
 void renderIdleFace(IDisplay* display, int screenW, int screenH,
-                    BlinkState& blink);
+                    IdleState& state);

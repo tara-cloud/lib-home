@@ -1,88 +1,82 @@
 #include "idle_face.h"
 #include <Arduino.h>
 
-// Eye geometry (preferred, user-confirmed: 36×36 r=8 space=10)
-static const int _EYE_W = 36;
+// Eye geometry — width 30, height 36
+static const int _EYE_W = 30;
 static const int _EYE_H = 36;
 static const int _EYE_R = 8;
 static const int _SPACE = 10;
 
-// Draw both eyes with a lid covering the top lidH pixels (0 = fully open).
-// Shadow: a 2 px white copy offset -2 px left and +2 px down, drawn first.
-// The eye body draws on top — shadow peeks out on left and bottom edges only.
-static void _drawEyes(IDisplay* d, int leftX, int rightX, int eyeY, int lidH) {
-    d->clear();
-    d->fillScreen(false);   // black background
+// Shadow offsets
+static const int _SX = -2;
+static const int _SY =  2;
 
-    static const int SX = -2;   // shadow offset left
-    static const int SY =  2;   // shadow offset down
+// Eye move interval and max offset range
+static const unsigned long MOVE_INTERVAL = 3000;   // every 3 s
+static const int           MAX_OFFSET_X  = 8;
+static const int           MAX_OFFSET_Y  = 5;
+
+// Tween speed — fraction of distance closed per frame (0.2 = 20%)
+static const float TWEEN = 0.25f;
+
+static void _drawEyes(IDisplay* d, int screenW, int screenH, int ox, int oy) {
+    int totalW = _EYE_W + _SPACE + _EYE_W;
+    int baseX  = (screenW - totalW) / 2;
+    int leftX  = baseX  + ox;
+    int rightX = baseX + _EYE_W + _SPACE + ox;
+    int eyeY   = (screenH - _EYE_H) / 2 + oy;
+
+    d->clear();
+    d->fillScreen(false);
 
     for (int ex : {leftX, rightX}) {
-        // Shadow
-        d->fillRoundRect(ex + SX, eyeY + SY, _EYE_W, _EYE_H, _EYE_R, true);
-        // Eye body
-        d->fillRoundRect(ex, eyeY, _EYE_W, _EYE_H, _EYE_R, true);
-
-        if (lidH > 0) {
-            // Black lid descends from the TOP — keeps bottom of eye visible
-            int blackH = min(lidH, _EYE_H - 6);   // always leave bottom 6px white
-            d->fillRect(ex + SX, eyeY + SY, _EYE_W, blackH, false);
-            d->fillRect(ex,      eyeY,       _EYE_W, blackH, false);
-        }
+        d->fillRoundRect(ex + _SX, eyeY + _SY, _EYE_W, _EYE_H, _EYE_R, true);  // shadow
+        d->fillRoundRect(ex,       eyeY,        _EYE_W, _EYE_H, _EYE_R, true);  // eye
     }
 
     d->show();
 }
 
+// Possible gaze positions: centre + 8 directions
+static const int8_t _POSITIONS[][2] = {
+    { 0,  0},               // centre (higher weight — appears 3x)
+    { 0,  0},
+    { 0,  0},
+    {-MAX_OFFSET_X,  0},   // left
+    { MAX_OFFSET_X,  0},   // right
+    { 0, -MAX_OFFSET_Y},   // up
+    { 0,  MAX_OFFSET_Y},   // down
+    {-MAX_OFFSET_X, -MAX_OFFSET_Y},  // up-left
+    { MAX_OFFSET_X, -MAX_OFFSET_Y},  // up-right
+};
+static const int _N_POSITIONS = sizeof(_POSITIONS) / sizeof(_POSITIONS[0]);
+
 void renderIdleFace(IDisplay* display, int screenW, int screenH,
-                    BlinkState& blink) {
-    unsigned long now    = millis();
-    unsigned long elapsed = now - blink.phaseAt;
+                    IdleState& state) {
+    unsigned long now = millis();
 
-    // ── Advance state machine ─────────────────────────────────────────────────
-    switch (blink.phase) {
-        case BLINK_WAITING:
-            if (elapsed >= BLINK_WAIT_MS) {
-                blink.phase   = BLINK_CLOSING;
-                blink.phaseAt = now;
-                elapsed       = 0;
-            }
-            break;
-        case BLINK_CLOSING:
-            if (elapsed >= BLINK_CLOSE_MS) {
-                blink.phase   = BLINK_OPENING;
-                blink.phaseAt = now;
-                elapsed       = 0;
-            }
-            break;
-        case BLINK_OPENING:
-            if (elapsed >= BLINK_OPEN_MS) {
-                blink.phase   = BLINK_WAITING;
-                blink.phaseAt = now;
-                elapsed       = 0;
-            }
-            break;
+    // Schedule first move
+    if (state.moveAt == 0) {
+        state.moveAt = now + MOVE_INTERVAL;
     }
 
-    // ── Calculate lid height for this frame ───────────────────────────────────
-    // Closing: ease-in (t²) — starts slow, accelerates → feels natural
-    // Opening: linear — snaps back quickly
-    int lidH = 0;
-    if (blink.phase == BLINK_CLOSING) {
-        float t = (float)elapsed / BLINK_CLOSE_MS;
-        lidH = (int)(t * t * (_EYE_H + 1));   // ease-in quadratic
-    } else if (blink.phase == BLINK_OPENING) {
-        float t = (float)elapsed / BLINK_OPEN_MS;
-        float eased = 1.0f - (1.0f - t) * (1.0f - t);   // ease-out quadratic
-        lidH = (int)((1.0f - eased) * (_EYE_H + 1));
+    // Fire move — pick random gaze target
+    if (now >= state.moveAt) {
+        int idx = random(0, _N_POSITIONS);
+        state.targetX = _POSITIONS[idx][0];
+        state.targetY = _POSITIONS[idx][1];
+        state.moveAt  = now + MOVE_INTERVAL + (unsigned long)random(0, 1001);
     }
-    lidH = constrain(lidH, 0, _EYE_H);
 
-    // ── Layout ────────────────────────────────────────────────────────────────
-    int totalW = _EYE_W + _SPACE + _EYE_W;
-    int leftX  = (screenW - totalW) / 2;
-    int rightX = leftX + _EYE_W + _SPACE;
-    int eyeY   = (screenH - _EYE_H) / 2;
+    // Tween current offset toward target
+    float dx = state.targetX - state.offsetX;
+    float dy = state.targetY - state.offsetY;
+    state.offsetX += (int)(dx * TWEEN);
+    state.offsetY += (int)(dy * TWEEN);
 
-    _drawEyes(display, leftX, rightX, eyeY, lidH);
+    // Snap to target when close enough
+    if (abs(state.offsetX - state.targetX) <= 1) state.offsetX = state.targetX;
+    if (abs(state.offsetY - state.targetY) <= 1) state.offsetY = state.targetY;
+
+    _drawEyes(display, screenW, screenH, state.offsetX, state.offsetY);
 }

@@ -31,6 +31,6 @@ public:
 private:
     IDisplay*    _d;
     int          _sw, _sh;
-    BlinkState   _blink;
+    IdleState    _idle;
     GiggleState  _giggle;
 };

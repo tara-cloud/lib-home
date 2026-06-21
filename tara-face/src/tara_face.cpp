@@ -13,12 +13,11 @@ void TaraFace::begin() {
 }
 
 void TaraFace::drawIdle() {
-    renderIdleFace(_d, _sw, _sh, _blink);
+    renderIdleFace(_d, _sw, _sh, _idle);
 }
 
 void TaraFace::drawGiggle() {
-    // When animation finishes, revert to idle
     if (!renderGiggleFace(_d, _sw, _sh, _giggle)) {
-        _blink = {};   // reset blink state so idle starts fresh
+        _idle = {};   // reset idle state so eyes start fresh after giggle
     }
 }
