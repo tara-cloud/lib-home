@@ -273,6 +273,60 @@ void setup() {
 
 ---
 
+### health-check `1.0.0`
+
+Periodic health-check publisher over MQTT — reads `healthcheck.enabled` / `healthcheck.frequency` from config4h, component list from reg4h.
+
+**Install:**
+
+```ini
+lib_deps =
+    http://192.168.0.107:30600/api/files/health-check/health-check/1.0.0/health-check.zip?token=<api-key>
+    bblanchon/ArduinoJson@^7.0.0
+    knolleary/PubSubClient@^2.8
+```
+
+**Usage:**
+
+```cpp
+#include <health_check.h>
+
+void setup() {
+    // reg4h components + config4h must be initialised first
+    health_check_init("192.168.1.10", 1883, "tara01", "Tara");
+
+    // Optional: mark a component unhealthy
+    health_check_set_status("OLED", "Unhealthy");
+}
+
+void loop() {
+    health_check_loop();   // publishes when enabled=true and interval elapses
+}
+```
+
+**Config** (via `{projectId}.{deviceName}.config` MQTT message):
+
+```json
+{ "healthcheck": { "enabled": true, "frequency": 30 } }
+```
+
+**Published payload** (`{projectId}.{deviceName}.healthcheck`):
+
+```json
+{
+  "projectId":  "tara01",
+  "deviceName": "Tara",
+  "timestamp":  "2026-06-21 10:30:00.000 IST",
+  "status":     "Healthy",
+  "components": [
+    { "name": "OLED",        "status": "Healthy" },
+    { "name": "TouchSensor", "status": "Healthy" }
+  ]
+}
+```
+
+---
+
 ## Publishing a library update
 
 ```bash
