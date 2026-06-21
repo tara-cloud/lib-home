@@ -62,6 +62,7 @@ static volatile uint32_t _dropped  = 0;   // entries lost when queue was full
 static SemaphoreHandle_t _mutex    = nullptr;
 
 static String _device;
+static String _firmwareVersion;
 static int    _taskStack = 4096;
 static int    _taskCore  = 0;
 
@@ -120,7 +121,8 @@ static void _drainTask(void*) {
                 doc["logger"]    = e.logger;
                 doc["message"]   = e.message;
                 doc["timestamp"] = e.ms;
-                if (_device.length()) doc["device"] = _device;
+                if (_device.length())           doc["device"]           = _device;
+                if (_firmwareVersion.length())  doc["firmwareVersion"]  = _firmwareVersion;
                 String out;
                 serializeJson(doc, out);
                 _mqttPublish(_mqttTopic.c_str(), out.c_str());
@@ -243,7 +245,8 @@ void log4c_set(const char* key, const char* value) {
         return strcmp(v, "true") == 0 || strcmp(v, "1") == 0;
     };
 
-    if      (!strcmp(key, "device"))           { _device         = value; }
+    if      (!strcmp(key, "device"))           { _device            = value; }
+    else if (!strcmp(key, "firmwareVersion"))  { _firmwareVersion   = value; }
     else if (!strcmp(key, "console.enabled"))  { _consoleEnabled = toBool(value); }
     else if (!strcmp(key, "console.level"))    { _consoleLevel   = _levelFromStr(value); }
     else if (!strcmp(key, "mqtt.enabled"))     { _mqttEnabled    = toBool(value); }
