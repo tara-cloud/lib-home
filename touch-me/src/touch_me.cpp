@@ -29,6 +29,7 @@ void TouchMe::setTapWindow(unsigned long ms)      { _tapWin  = ms; }
 void TouchMe::setGapWindow(unsigned long ms)      { _gapWin  = ms; }
 void TouchMe::setLongPressTime(unsigned long ms)  { _longMs  = ms; }
 void TouchMe::setPaddingInterval(unsigned long ms){ _padMs   = ms; }
+void TouchMe::setDebounce(int count)              { _debounce = count > 0 ? count : 1; }
 
 // ─── Callbacks ────────────────────────────────────────────────────────────────
 
@@ -63,7 +64,7 @@ void TouchMe::update() {
     if (raw == _stable) {
         _dbc = 0;
     } else {
-        if (++_dbc >= DEBOUNCE) {
+        if (++_dbc >= _debounce) {
             _stable = raw;
             _dbc    = 0;
         }

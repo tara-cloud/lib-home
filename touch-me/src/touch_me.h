@@ -63,6 +63,7 @@ public:
     void setGapWindow(unsigned long ms);        // multi-tap collection window    (default 600)
     void setLongPressTime(unsigned long ms);    // hold time for long press       (default 3000)
     void setPaddingInterval(unsigned long ms);  // repeat rate while held         (default 400)
+    void setDebounce(int count);                // consecutive reads to flip state (default 3)
 
     // ─── Callbacks ────────────────────────────────────────────────────────────
 
@@ -94,9 +95,8 @@ private:
     unsigned long _padMs      = 400;
 
     // Debounce
-    static const int DEBOUNCE = 3;
-    int   _dbc    = 0;
-    bool  _stable = false;
+    int   _debounce = 3;    // consecutive matching reads to flip state
+    int   _dbc      = 0;
 
     // Gesture state
     bool          _down      = false;
