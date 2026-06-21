@@ -12,53 +12,55 @@
 //   healthcheck.enabled   (bool)  — master switch
 //   healthcheck.frequency (int)   — interval in seconds between publishes
 //
+// ─── Status values ────────────────────────────────────────────────────────────
+// HC_ONLINE   "Online"   — device/component is reachable and functioning
+// HC_HEALTHY  "Healthy"  — all checks pass (default for components)
+// HC_ERROR    "Error"    — reachable but in a fault state
+// HC_OFFLINE  "Offline"  — unreachable or powered off
+//
 // ─── Outbound topic ──────────────────────────────────────────────────────────
 // Topic  : {projectId}.{deviceName}.healthcheck
 // Payload:
 //   {
 //     "projectId":  "tara01",
 //     "deviceName": "Tara",
-//     "timestamp":  "2026-06-11 12:12:13.345 IST",
-//     "status":     "Healthy",
+//     "timestamp":  "2026-06-11 12:12:13.000 IST",
+//     "status":     "Online",
 //     "components": [
 //       { "name": "OLED",        "status": "Healthy" },
 //       { "name": "TouchSensor", "status": "Healthy" }
 //     ]
 //   }
 //
-// Component status is "Healthy" by default. Call health_check_set_status()
-// to mark a specific component as degraded or unhealthy.
-//
 // ─── Usage ───────────────────────────────────────────────────────────────────
-//   // After config4h_init() and reg4h_add_component() calls:
 //   health_check_init("192.168.1.10", 1883, "tara01", "Tara");
 //
 //   // In loop():
-//   health_check_loop();    // publishes when interval elapses and enabled=true
+//   health_check_loop();
 //
-//   // Optionally mark a component unhealthy:
-//   health_check_set_status("OLED", "Unhealthy");
+//   // Mark a component degraded:
+//   health_check_set_status("OLED", HC_ERROR);
+
+// ─── Status constants ─────────────────────────────────────────────────────────
+static const char* HC_ONLINE  = "Online";
+static const char* HC_HEALTHY = "Healthy";
+static const char* HC_ERROR   = "Error";
+static const char* HC_OFFLINE = "Offline";
 
 // ─── Component status override ────────────────────────────────────────────────
-// Sets the reported status string for a named component.
-// Name match is case-sensitive and must match reg4h component name exactly.
-// Default status for all components is "Healthy".
+// Sets the reported status for a named component.
+// Name match is case-sensitive; must match reg4h component name exactly.
+// Default for all components is HC_HEALTHY.
 void health_check_set_status(const String& componentName, const String& status);
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-// Connects a dedicated MQTT client for publishing health-check packets.
-// Call once after WiFi is up, config4h is initialised, and reg4h components
-// are registered.
 void health_check_init(const String& mqttHost, uint16_t mqttPort,
                        const String& projectId, const String& deviceName);
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
-// Call every loop() iteration.
-// Reads healthcheck.enabled and healthcheck.frequency from config4h on each
-// tick so changes take effect immediately without restart.
-// Publishes when: enabled == true && millis() - lastPublish >= frequency * 1000
+// Call every loop(). Publishes when enabled=true and frequency elapses.
 void health_check_loop();
 
 // ─── Manual publish ───────────────────────────────────────────────────────────
-// Publish a health-check packet immediately, regardless of frequency or enabled.
+// Publish immediately regardless of frequency or enabled flag.
 void health_check_publish();

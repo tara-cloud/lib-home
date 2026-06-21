@@ -1,6 +1,6 @@
 {
   "name": "health-check",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Periodic health-check publisher over MQTT for ESP32 — reads config from config4h, component list from reg4h, publishes at configured frequency",
   "keywords": ["healthcheck", "mqtt", "esp32", "monitoring", "iot"],
   "frameworks": ["arduino"],

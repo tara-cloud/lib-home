@@ -57,7 +57,7 @@ static String _statusFor(const String& name) {
     for (int i = 0; i < _overrideCount; i++) {
         if (_overrides[i].name == name) return _overrides[i].status;
     }
-    return "Healthy";
+    return HC_HEALTHY;
 }
 
 // Build ISO-like timestamp from system time.
@@ -134,7 +134,7 @@ void health_check_publish() {
     doc["projectId"]  = _projectId;
     doc["deviceName"] = _deviceName;
     doc["timestamp"]  = _timestamp();
-    doc["status"]     = "Healthy";
+    doc["status"]     = HC_ONLINE;
 
     JsonArray comps = doc["components"].to<JsonArray>();
     for (int i = 0; i < reg4h_component_count(); i++) {
