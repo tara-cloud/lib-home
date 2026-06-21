@@ -2,27 +2,35 @@
 #include <face.h>
 #include <IDisplay.h>
 #include "idle_face.h"
+#include "giggle_face.h"
 
-// ─── tara-face — idle face with animated blink ────────────────────────────────
+// ─── tara-face — idle + giggle face renderer ─────────────────────────────────
 //
-// Delegates idle rendering to idle_face.cpp.
-// Blink every 5 s: lid sweeps top→bottom (200 ms) then bottom→top (200 ms).
+// Registers FACE_IDLE and FACE_GIGGLE with the face dispatcher.
+// FACE_IDLE — animated blink every 4 s
+// FACE_GIGGLE — squinted eyes bounce 4 times, then returns to idle
 //
 // ─── Usage ───────────────────────────────────────────────────────────────────
 //   TaraFace face(&display);
 //   face.begin();
 //
-//   void loop() { renderFace(toFaceState(currentState)); }
+//   void loop() {
+//       renderFace(toFaceState(currentState));
+//       // or trigger directly:
+//       renderFace(FACE_GIGGLE);
+//   }
 
 class TaraFace {
 public:
     TaraFace(IDisplay* display, int screenW = 128, int screenH = 64);
 
-    void begin();      // registers FACE_IDLE with the face dispatcher
-    void drawIdle();   // delegates to renderIdleFace() in idle_face.cpp
+    void begin();       // registers FACE_IDLE + FACE_GIGGLE
+    void drawIdle();
+    void drawGiggle();
 
 private:
-    IDisplay*  _d;
-    int        _sw, _sh;
-    BlinkState _blink;   // animation state owned here, passed by ref
+    IDisplay*    _d;
+    int          _sw, _sh;
+    BlinkState   _blink;
+    GiggleState  _giggle;
 };

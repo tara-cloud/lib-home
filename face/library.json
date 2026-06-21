@@ -1,6 +1,6 @@
 {
   "name": "face",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Header-only face expression catalogue for Tara robot — forward declarations for all display expressions",
   "keywords": ["face", "expression", "display", "esp32", "robot"],
   "frameworks": ["arduino"],

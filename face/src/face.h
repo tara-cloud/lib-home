@@ -36,6 +36,7 @@ enum FaceState {
     FACE_SPEAKING,
     FACE_SLEEPING,
     FACE_ERROR,
+    FACE_GIGGLE,
     FACE_STATE_COUNT
 };
 
