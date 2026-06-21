@@ -1,27 +1,29 @@
 #pragma once
+#include "IDisplay.h"
+#include "face.h"
 
-// ─── emo-face — TaraExpressions implementation of the face interface ──────────
+// ─── emo-face — IDisplay-based FaceRenderer implementation ───────────────────
 //
-// Implements all declarations from face.h using TaraExpressions + IDisplay.
-//
-// The consuming project must supply a concrete IDisplay adapter and call
-// emo_face_init() once before loop() runs.
+// Builds and returns a FaceRenderer populated with expression functions that
+// draw directly through IDisplay primitives. No TaraExpressions dependency.
 //
 // ─── Usage ───────────────────────────────────────────────────────────────────
-//   // In device.cpp / setup():
+//   #include <face.h>
 //   #include <emo_face.h>
-//   emo_face_init(&myDisplayAdapter);   // pass any IDisplay*
 //
-//   // In loop() — driven by face.h contract:
-//   renderIdleFace();      // calls TaraExpressions::animateIdle()
-//   renderConfusedFace();  // draws confused expression via u8g2 primitives
+//   void setup() {
+//       face_register(emo_face_renderer(&myDisplay));
+//   }
 //
-// ─── Swapping implementations ────────────────────────────────────────────────
-// To use a different face set, remove emo-face from lib_deps and add a
-// different library that also implements face.h. No other changes needed.
+//   void loop() {
+//       renderFace(FACE_IDLE);          // animates idle
+//       renderFace(FACE_WAITING_CONFIG); // draws confused face
+//   }
+//
+// ─── Swapping ────────────────────────────────────────────────────────────────
+// Replace with any other renderer factory that returns a FaceRenderer — zero
+// changes needed in main.cpp or device.cpp.
 
-#include "IDisplay.h"
-
-// Must be called once before any renderXxxFace() call.
-// Stores the IDisplay pointer used by all expression renders.
-void emo_face_init(IDisplay* display);
+// Returns a FaceRenderer with all supported states populated.
+// display — any IDisplay adapter (U8g2Display, SSD1306Display, etc.)
+FaceRenderer emo_face_renderer(IDisplay* display);
