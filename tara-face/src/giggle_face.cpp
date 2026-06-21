@@ -1,34 +1,59 @@
 #include "giggle_face.h"
 #include <Arduino.h>
 
-static const int _GG_EYE_W = 36;
-static const int _GG_EYE_H = 28;   // tall = thick visible arch
-static const int _GG_EYE_R = 14;   // large radius = smooth round top
-static const int _GG_SPACE  = 10;
-static const int _GG_MASK   = 10;  // only mask this many px from bottom → thick arch
+// Eye shape from the image: small pill/capsule eyes, close together, upper-centre.
+// Width narrow, height moderate, very round (r = w/2 makes a true capsule).
+// Slightly inward tilt simulated by masking the outer-top corner of each eye.
+static const int _GG_EYE_W  = 22;   // narrow pill
+static const int _GG_EYE_H  = 14;   // taller than wide → capsule feel
+static const int _GG_EYE_R  = 7;    // r = w/2 = full capsule ends
+static const int _GG_SPACE  = 14;   // close together
+static const int _GG_TILT   = 3;    // px — inner-top corner masked for inward lean
 
-// Draw one arch eye at (x, y).
-// Arch = filled rounded rect with bottom half masked black → only top curve visible.
-static void _drawArch(IDisplay* d, int x, int y) {
-    // Full rounded rect (white)
+// Draw one capsule eye with inward tilt mask.
+// isLeft=true masks top-right corner (leans right), isLeft=false masks top-left.
+static void _drawCapsule(IDisplay* d, int x, int y, bool isLeft) {
     d->fillRoundRect(x, y, _GG_EYE_W, _GG_EYE_H, _GG_EYE_R, true);
-    // Mask only the bottom strip → leaves a thick happy arch
-    d->fillRect(x, y + _GG_EYE_H - _GG_MASK, _GG_EYE_W, _GG_MASK + 1, false);
+    // Inward tilt — mask stepped triangle at inner-top corner
+    for (int t = 0; t < _GG_TILT; t++) {
+        int maskW = _GG_TILT - t;
+        if (isLeft)
+            d->fillRect(x + _GG_EYE_W - maskW, y + t, maskW, 1, false);  // right side of left eye
+        else
+            d->fillRect(x, y + t, maskW, 1, false);                        // left side of right eye
+    }
 }
 
-static void _drawGiggleEyes(IDisplay* d, int screenW, int screenH,
-                             int offsetX, int offsetY) {
+static void _drawGiggleFrame(IDisplay* d, int screenW, int screenH,
+                              int offsetX, int scaleH) {
     int totalW = _GG_EYE_W + _GG_SPACE + _GG_EYE_W;
-    int baseX  = (screenW - totalW) / 2;
-    int eyeY   = (screenH - _GG_EYE_H / 2) / 2 + offsetY;  // centre the visible arch
+    int leftX  = (screenW - totalW) / 2 + offsetX;
+    int rightX = leftX + _GG_EYE_W + _GG_SPACE;
 
-    int leftX  = baseX + offsetX;
-    int rightX = baseX + _GG_EYE_W + _GG_SPACE + offsetX;
+    // Position eyes in upper third of screen (like the image)
+    int eyeY = screenH / 4;
+
+    // Pulse: temporarily taller eyes on even cycle
+    int h = _GG_EYE_H + scaleH;
+    int r = h / 2;
 
     d->clear();
     d->fillScreen(false);
-    _drawArch(d, leftX,  eyeY);
-    _drawArch(d, rightX, eyeY);
+
+    // Left eye
+    d->fillRoundRect(leftX, eyeY, _GG_EYE_W, h, r, true);
+    for (int t = 0; t < _GG_TILT; t++) {
+        int mw = _GG_TILT - t;
+        d->fillRect(leftX + _GG_EYE_W - mw, eyeY + t, mw, 1, false);
+    }
+
+    // Right eye
+    d->fillRoundRect(rightX, eyeY, _GG_EYE_W, h, r, true);
+    for (int t = 0; t < _GG_TILT; t++) {
+        int mw = _GG_TILT - t;
+        d->fillRect(rightX, eyeY + t, mw, 1, false);
+    }
+
     d->show();
 }
 
@@ -45,16 +70,16 @@ bool renderGiggleFace(IDisplay* display, int screenW, int screenH,
     int cycle = (int)(elapsed / GIGGLE_BOUNCE_MS);
 
     if (cycle >= GIGGLE_BOUNCES * 2) {
-        _drawGiggleEyes(display, screenW, screenH, 0, 0);
+        // End — draw clean capsule eyes centred, no offset
+        _drawGiggleFrame(display, screenW, screenH, 0, 0);
         state.active = false;
         return false;
     }
 
-    // Shake: alternate left (-5px) and right (+5px)
-    int offsetX = (cycle % 2 == 0) ? -5 : 5;
-    // Slight vertical bob too
-    int offsetY = (cycle % 4 < 2) ? -2 : 2;
+    // Tiny left/right wobble (±3px) + pulse height (+4px on every other cycle)
+    int offsetX = (cycle % 2 == 0) ? -3 : 3;
+    int scaleH  = (cycle % 2 == 0) ?  4 : 0;
 
-    _drawGiggleEyes(display, screenW, screenH, offsetX, offsetY);
+    _drawGiggleFrame(display, screenW, screenH, offsetX, scaleH);
     return true;
 }
