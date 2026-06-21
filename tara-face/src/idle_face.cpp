@@ -18,22 +18,16 @@ static void _drawEyes(IDisplay* d, int leftX, int rightX, int eyeY, int lidH) {
     static const int SY =  2;   // shadow offset down
 
     for (int ex : {leftX, rightX}) {
-        if (lidH >= _EYE_H) {
-            // Fully closed — shadow line then closed line
-            d->fillRect(ex + SX, eyeY + _EYE_H - 3 + SY, _EYE_W, 3, true);
-            d->fillRect(ex,      eyeY + _EYE_H - 3,       _EYE_W, 3, true);
-        } else {
-            // Shadow (slightly offset, drawn behind the eye)
-            d->fillRoundRect(ex + SX, eyeY + SY, _EYE_W, _EYE_H, _EYE_R, true);
+        // Shadow
+        d->fillRoundRect(ex + SX, eyeY + SY, _EYE_W, _EYE_H, _EYE_R, true);
+        // Eye body
+        d->fillRoundRect(ex, eyeY, _EYE_W, _EYE_H, _EYE_R, true);
 
-            // Eye body on top
-            d->fillRoundRect(ex, eyeY, _EYE_W, _EYE_H, _EYE_R, true);
-
-            // Black lid descending from the top (erases lid portion of eye)
-            if (lidH > 0) {
-                d->fillRect(ex + SX, eyeY + SY, _EYE_W, lidH, false); // erase shadow lid too
-                d->fillRect(ex,      eyeY,       _EYE_W, lidH, false);
-            }
+        if (lidH > 0) {
+            // Black lid descends from the TOP — keeps bottom of eye visible
+            int blackH = min(lidH, _EYE_H - 6);   // always leave bottom 6px white
+            d->fillRect(ex + SX, eyeY + SY, _EYE_W, blackH, false);
+            d->fillRect(ex,      eyeY,       _EYE_W, blackH, false);
         }
     }
 
