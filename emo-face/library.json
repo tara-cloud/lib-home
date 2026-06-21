@@ -1,7 +1,7 @@
 {
   "name": "emo-face",
-  "version": "2.0.0",
-  "description": "TaraExpressions implementation of the face.h contract — animated eyes for Tara robot OLED display",
+  "version": "2.1.0",
+  "description": "IDisplay-based FaceRenderer for Tara robot — animated eyes, implements face.h contract",
   "keywords": ["face", "expression", "oled", "esp32", "robot", "display"],
   "frameworks": ["arduino"],
   "platforms": ["espressif32"],

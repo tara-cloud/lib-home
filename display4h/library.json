@@ -1,0 +1,9 @@
+{
+  "name": "display4h",
+  "version": "1.0.0",
+  "description": "Display hardware abstraction for ESP32/Arduino — IDisplay interface, U8g2Display and SSD1306Display adapters",
+  "keywords": ["display", "oled", "u8g2", "ssd1306", "abstraction", "esp32"],
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32"],
+  "dependencies": {}
+}

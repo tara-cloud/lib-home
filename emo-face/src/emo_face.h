@@ -1,5 +1,5 @@
 #pragma once
-#include "IDisplay.h"
+#include <IDisplay.h>
 #include "face.h"
 
 // ─── emo-face — IDisplay-based FaceRenderer implementation ───────────────────

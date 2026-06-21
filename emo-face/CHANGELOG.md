@@ -1,5 +1,12 @@
 # Changelog — emo-face
 
+## [2.1.0] — 2026-06-21
+
+### Changed
+
+- `IDisplay.h`, `U8g2Display.h`, `SSD1306Display.h` moved to `display4h` library
+- `emo_face.h` now includes `<IDisplay.h>` (from display4h) instead of local copy
+
 ## [1.0.0] — 2026-06-21
 
 ### Added
