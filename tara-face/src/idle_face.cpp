@@ -79,7 +79,8 @@ void renderIdleFace(IDisplay* display, int screenW, int screenH,
         lidH = (int)(t * t * (_EYE_H + 1));   // ease-in quadratic
     } else if (blink.phase == BLINK_OPENING) {
         float t = (float)elapsed / BLINK_OPEN_MS;
-        lidH = (int)((1.0f - t) * (_EYE_H + 1));   // linear
+        float eased = 1.0f - (1.0f - t) * (1.0f - t);   // ease-out quadratic
+        lidH = (int)((1.0f - eased) * (_EYE_H + 1));
     }
     lidH = constrain(lidH, 0, _EYE_H);
 
