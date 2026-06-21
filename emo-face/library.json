@@ -1,6 +1,6 @@
 {
   "name": "emo-face",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "IDisplay-based FaceRenderer for Tara robot — animated eyes, implements face.h contract",
   "keywords": ["face", "expression", "oled", "esp32", "robot", "display"],
   "frameworks": ["arduino"],
