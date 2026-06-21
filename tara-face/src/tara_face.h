@@ -3,10 +3,10 @@
 #include <IDisplay.h>
 #include "idle_face.h"
 
-// ─── tara-face — idle face with 250 ms blink animation ───────────────────────
+// ─── tara-face — idle face with animated blink ────────────────────────────────
 //
-// Delegates idle rendering to idle_face.cpp — swap that file to change the
-// look without touching the class.
+// Delegates idle rendering to idle_face.cpp.
+// Blink every 5 s: lid sweeps top→bottom (200 ms) then bottom→top (200 ms).
 //
 // ─── Usage ───────────────────────────────────────────────────────────────────
 //   TaraFace face(&display);
@@ -22,10 +22,7 @@ public:
     void drawIdle();   // delegates to renderIdleFace() in idle_face.cpp
 
 private:
-    IDisplay* _d;
-    int _sw, _sh;
-
-    // Blink animation state (passed by reference to renderIdleFace)
-    bool          _eyesOpen  = true;
-    unsigned long _lastBlink = 0;
+    IDisplay*  _d;
+    int        _sw, _sh;
+    BlinkState _blink;   // animation state owned here, passed by ref
 };

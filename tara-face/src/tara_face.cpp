@@ -11,5 +11,5 @@ void TaraFace::begin() {
 }
 
 void TaraFace::drawIdle() {
-    renderIdleFace(_d, _sw, _sh, _eyesOpen, _lastBlink);
+    renderIdleFace(_d, _sw, _sh, _blink);
 }

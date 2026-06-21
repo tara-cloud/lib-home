@@ -3,12 +3,21 @@
 
 // ─── Idle face render ─────────────────────────────────────────────────────────
 // Two white rounded-rectangle eyes centred on screen.
-// Blinks every BLINK_INTERVAL ms (open ↔ closed thin line), non-blocking.
+// Blink animation every 5 s:
+//   lid descends top→bottom over BLINK_CLOSE_MS,
+//   then rises  bottom→top over BLINK_OPEN_MS.
+// Non-blocking — all state held in BlinkState.
 
-static const unsigned long IDLE_BLINK_INTERVAL = 5000;
+static const unsigned long BLINK_WAIT_MS  = 5000;  // open hold
+static const unsigned long BLINK_CLOSE_MS =  200;  // close duration
+static const unsigned long BLINK_OPEN_MS  =  200;  // open duration
 
-// Call every loop tick while in FACE_IDLE state.
-// display, screenW, screenH — display and dimensions
-// eyesOpen, lastBlink       — animation state (persist between calls)
+enum BlinkPhase { BLINK_WAITING, BLINK_CLOSING, BLINK_OPENING };
+
+struct BlinkState {
+    BlinkPhase    phase     = BLINK_WAITING;
+    unsigned long phaseAt   = 0;   // millis() when this phase started
+};
+
 void renderIdleFace(IDisplay* display, int screenW, int screenH,
-                    bool& eyesOpen, unsigned long& lastBlink);
+                    BlinkState& blink);
