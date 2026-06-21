@@ -1,18 +1,25 @@
 #pragma once
+#include <Arduino.h>
 
-// ─── face — face expression declarations for Tara robot display ──────────────
+// ─── face — face expression interface ────────────────────────────────────────
 //
-// This header is the single catalogue of all supported face expressions.
-// Each expression corresponds to a function that must be implemented by the
-// consuming project (e.g. device.cpp in tara-robo).
+// Forward declarations for all supported face expressions.
+// Each function must be implemented by exactly ONE face implementation library
+// (e.g. emo-face). The consuming project includes both this header and the
+// chosen implementation library in platformio.ini lib_deps.
+//
+// Swapping implementation:
+//   Replace the implementation library in lib_deps — nothing in main.cpp or
+//   device.cpp changes. The linker picks up the new definitions automatically.
 //
 // Adding a new expression:
-//   1. Declare it here (forward declaration only — no implementation)
-//   2. Implement it in device.cpp using u8g2 draw calls or JSON command playback
-//   3. Call it from the appropriate state handler in main.cpp / loop()
+//   1. Declare it here
+//   2. Implement it in the chosen implementation library
 //
-// ─── Idle ─────────────────────────────────────────────────────────────────────
+// ─── Declarations ────────────────────────────────────────────────────────────
 
-// Animated idle face — plays the TaraExpressions idle animation loop.
-// Call continuously in loop() while STATE_IDLE.
+// Animated idle face — call continuously in loop() while STATE_IDLE.
 void renderIdleFace();
+
+// Confused / waiting face — call while STATE_WAITING_CONFIG.
+void renderConfusedFace();
