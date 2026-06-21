@@ -1,0 +1,9 @@
+{
+  "name": "touch-me",
+  "version": "1.0.0",
+  "description": "ESP32 capacitive touch gesture library — tap, double tap, multi-tap, long press, padding; callback-based, non-blocking",
+  "keywords": ["touch", "gesture", "capacitive", "esp32", "tap"],
+  "frameworks": ["arduino"],
+  "platforms": ["espressif32"],
+  "dependencies": {}
+}
