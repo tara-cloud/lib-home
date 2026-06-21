@@ -5,7 +5,7 @@
 // Two white rounded-rectangle eyes centred on screen.
 // Blinks every BLINK_INTERVAL ms (open ↔ closed thin line), non-blocking.
 
-static const unsigned long IDLE_BLINK_INTERVAL = 250;
+static const unsigned long IDLE_BLINK_INTERVAL = 5000;
 
 // Call every loop tick while in FACE_IDLE state.
 // display, screenW, screenH — display and dimensions
