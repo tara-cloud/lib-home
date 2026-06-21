@@ -97,6 +97,7 @@ private:
     // Debounce
     int   _debounce = 3;    // consecutive matching reads to flip state
     int   _dbc      = 0;
+    bool  _stable   = false;
 
     // Gesture state
     bool          _down      = false;
