@@ -237,6 +237,42 @@ void loop() {
 
 ---
 
+### reg4h `1.0.0`
+
+Component registry for ESP32 — unified I2C scan + GPIO registration. One call for all hardware; read-back accessors for registration payloads.
+
+**Install:**
+
+```ini
+lib_deps =
+    http://192.168.0.107:30600/api/files/reg4h/reg4h/1.0.0/reg4h.zip?token=<api-key>
+```
+
+**Usage:**
+
+```cpp
+#include <reg4h.h>
+
+void setup() {
+    // I2C — scans bus, adds one entry per found address (OLED, MPU6050, etc.)
+    uint8_t i2cPins[] = {21, 22};
+    reg4h_add_component("", "", "I2C", i2cPins, 2);
+
+    // GPIO / other protocols
+    uint8_t touchPins[] = {18};
+    reg4h_add_component("TouchSensor", "input", "GPIO", touchPins, 1);
+    // → stored as pin="GPIO18", label="PIN18", direction="input"
+
+    // Read back for registration payload
+    for (int i = 0; i < reg4h_component_count(); i++) {
+        const Reg4hComponent* c = reg4h_get_component(i);
+        Serial.println(c->name);
+    }
+}
+```
+
+---
+
 ## Publishing a library update
 
 ```bash
