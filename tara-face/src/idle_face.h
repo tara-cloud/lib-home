@@ -8,8 +8,8 @@
 //   then rises  bottom→top over BLINK_OPEN_MS.
 // Non-blocking — all state held in BlinkState.
 
-static const unsigned long BLINK_WAIT_MS  = 5000;  // open hold
-static const unsigned long BLINK_CLOSE_MS =  200;  // close duration
+static const unsigned long BLINK_WAIT_MS  = 4000;  // open hold
+static const unsigned long BLINK_CLOSE_MS =  350;  // close duration (smooth)
 static const unsigned long BLINK_OPEN_MS  =  200;  // open duration
 
 enum BlinkPhase { BLINK_WAITING, BLINK_CLOSING, BLINK_OPENING };

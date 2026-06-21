@@ -71,15 +71,15 @@ void renderIdleFace(IDisplay* display, int screenW, int screenH,
     }
 
     // ── Calculate lid height for this frame ───────────────────────────────────
+    // Closing: ease-in (t²) — starts slow, accelerates → feels natural
+    // Opening: linear — snaps back quickly
     int lidH = 0;
     if (blink.phase == BLINK_CLOSING) {
-        // 0 → EYE_H  over BLINK_CLOSE_MS
         float t = (float)elapsed / BLINK_CLOSE_MS;
-        lidH = (int)(t * (_EYE_H + 1));
+        lidH = (int)(t * t * (_EYE_H + 1));   // ease-in quadratic
     } else if (blink.phase == BLINK_OPENING) {
-        // EYE_H → 0  over BLINK_OPEN_MS
         float t = (float)elapsed / BLINK_OPEN_MS;
-        lidH = (int)((1.0f - t) * (_EYE_H + 1));
+        lidH = (int)((1.0f - t) * (_EYE_H + 1));   // linear
     }
     lidH = constrain(lidH, 0, _EYE_H);
 
