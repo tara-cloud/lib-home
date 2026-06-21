@@ -2,16 +2,17 @@
 #include <face.h>
 #include <IDisplay.h>
 
-// ─── tara-face — minimal idle face renderer ───────────────────────────────────
+// ─── tara-face — idle face with 250 ms blink animation ───────────────────────
 //
 // Draws two white rounded-rectangle eyes centred on screen.
-// Implements face.h — call begin() to register with the face dispatcher.
+// Every 250 ms the eyes toggle: open ↔ closed (thin horizontal line).
+// Non-blocking — driven by millis() inside drawIdle().
 //
 // Eye size (preferred, user-confirmed):
 //   width=36  height=36  radius=8  space=10
 //
 // ─── Usage ───────────────────────────────────────────────────────────────────
-//   TaraFace face(&display, 128, 64);
+//   TaraFace face(&display);
 //   face.begin();
 //
 //   void loop() { renderFace(toFaceState(currentState)); }
@@ -23,7 +24,7 @@ public:
     // Call once in setup() — registers FACE_IDLE with the face dispatcher.
     void begin();
 
-    // Draw idle face immediately (two centred white eyes).
+    // Draw idle face — toggles open/closed every 250 ms, non-blocking.
     void drawIdle();
 
 private:
@@ -35,4 +36,12 @@ private:
     static const int EYE_H = 36;
     static const int EYE_R = 8;
     static const int SPACE = 10;
+
+    // Blink state
+    static const unsigned long BLINK_INTERVAL = 250;
+    bool          _eyesOpen   = true;
+    unsigned long _lastBlink  = 0;
+
+    void _drawOpen(int leftX, int rightX, int eyeY);
+    void _drawClosed(int leftX, int rightX, int eyeY);
 };
