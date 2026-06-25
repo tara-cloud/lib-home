@@ -1,9 +1,0 @@
-{
-  "name": "reg4h",
-  "version": "1.0.0",
-  "description": "Component registry for ESP32 — unified I2C scan + GPIO registration, KNOWN_I2C table, read-back accessors for device registration payloads",
-  "keywords": ["i2c", "discovery", "components", "esp32", "registration"],
-  "frameworks": ["arduino"],
-  "platforms": ["espressif32"],
-  "dependencies": {}
-}
